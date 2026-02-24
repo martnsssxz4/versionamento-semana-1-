@@ -1,0 +1,20 @@
+01 INICIAR_PROJETO("Loja Online - Checkout")
+02 usuario      <- obterUsuarioAutenticado()
+03 carrinho     <- obterCarrinho(usuario)                // validar entradas
+04 validarCarrinho(carrinho)                             // A pode melhorar msgs
+05 cepEntrega   <- obterEnderecoPadrao(usuario)
+06 subtotal     <- calcularSubtotal(carrinho)            // B pode corrigir arred.
+07 descontos    <- aplicarDescontos(cupom, usuario, subtotal) // cupom pode ser nulo
+08 frete        <- calcularFrete(cepEntrega, carrinho)
+09 total        <- max(0, subtotal + frete - descontos)
+10 registrarLog("checkout_iniciado", usuario.id, total)  // C pode apagar (limpeza)
+11 registrarLog("itens", carrinho.itens)                 // C pode apagar (limpeza)
+12 enviarMetricas("checkout", total)                     // C pode apagar (limpeza)
+13 pagamento    <- criarTransacao(cartao, total)
+14 SE pagamento.status == "APROVADO" ENTAO
+15     reservaEstoque(carrinho.itens)
+16     pedido <- gerarPedido(usuario, carrinho, pagamento, cepEntrega)
+17     enviarEmailConfirmacao(usuario.email, pedido.id)
+18     limparCarrinho(usuario)
+19     RETORNAR SUCESSO(pedido.id)
+20 SENAO RETORNAR ERRO("Pagamento recusado")
